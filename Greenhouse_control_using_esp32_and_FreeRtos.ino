@@ -92,14 +92,11 @@ void processingTask(void *pvParameters) {
 }
 
 void setup() {
-    Serial.begin(115200); // Begin serial communication for debugging
+    Serial.begin(115200); 
 
-    // Create the tasks
+    
     xTaskCreatePinnedToCore(sensorTask, "Sensor Task", 1024, NULL, 1, NULL, 0);
     xTaskCreatePinnedToCore(processingTask, "Processing Task", 1024, NULL, 2, NULL, 0);
 }
 
 
-void loop() {
-    // Empty, as we're using FreeRTOS tasks
-}
