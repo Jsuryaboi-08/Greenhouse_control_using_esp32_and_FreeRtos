@@ -71,8 +71,25 @@ void processingTask(void *pvParameters) {
       if(millis - lastPrintTime >= 5000){
         if(count>0){
           averageTemperature /=count;
-          Serial.print("Average temerature of the Green house is:")
+          averagehumidity /=count;
+          if(23<=averageTemperature<=29 && 75<=averagehumidity<=90){
+            Serial.print("your Gree House is working Great!");
+          }else{
+            Serial.print("Anamaly!!!");
+          }
+          Serial.print("Average temerature of the Green house is:");
+          Serial.println(averageTemperature);
+          Serial.print("Average humidity of the Green house is:");
+          Serial.print(averagehumidity);
+
+          averagehumidity=0.0;
+          averageTemperature=0.0
+          lastPrintTime = millis();
+
         }
+
+      }else{
+        Serial.println(" No Temperature or Humidity Data recieved yet !!!");
       }
 
       
