@@ -15,6 +15,9 @@
 typedef struct sensor_data {
   float temperature;
   int humidity;
+  float averageTemperature; 
+  uint32_t timestamp; 
+  float averagehumidity;
 } sensor_data_t;
 
 uint8_t queue_storage_array[QUEUE_LENGTH * ITEM_SIZE];
@@ -41,6 +44,8 @@ void sensorTask(void*pvParameters){
     data.temeprature = temperature;
     data.humidity = humidity;
 
+    data.timestamp = millis();
+
     if(xQueueSend(sensorDataQueue, &data, pdMS_TO_TICKS(1000)) != pdPASS){
       Serial.println("failed to send data to queue!");
     }
@@ -52,14 +57,23 @@ void sensorTask(void*pvParameters){
 
 void processingTask(void *pvParameters) {
   sensor_data_t receivedData;
+  float averageTemperature = 0.0;
+  float averagehumidity=0.0;
+  uint32_t count = 0;
 
   while (1) {
+
     if (xQueueReceive(sensorDataQueue, &receivedData, pdMS_TO_TICKS(10000)) == pdPASS) {
-      // Process data: print to serial, store in memory, etc.
-      
-      temperature =receivedData.temperature;
-      
-      humidity = receivedData.humidity;
+      averageTemperature += receivedData.temperature;
+      averagehumidity +=receivedData.humidity;
+      count++;
+
+      if(millis - lastPrintTime >= 5000){
+        if(count>0){
+          averageTemperature /=count;
+          Serial.print("Average temerature of the Green house is:")
+        }
+      }
 
       
 
