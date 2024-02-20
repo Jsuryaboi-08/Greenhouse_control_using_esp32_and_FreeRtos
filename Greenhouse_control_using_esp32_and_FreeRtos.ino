@@ -8,6 +8,7 @@
 #define DHTPIN 2
 #define DHTTYPE DHT11
 #define PRINTING_INTERVAL 5000 // Milliseconds
+#define SENSOR_SAMPLING_DELAY 2000 // Milliseconds
 
 #define QUEUE_LENGTH 5
 #define ITEM_SIZE sizeof(sensor_data_t)
@@ -20,13 +21,13 @@ typedef struct sensor_data {
     float averagehumidity;
 } sensor_data_t;
 
-uint8_t queue_storage_array[QUEUE_LENGTH * ITEM_SIZE];
-uint32_t queue_buffer_size = sizeof(queue_storage_array);
-QueueHandle_t sensorDataQueue = xQueueCreateStatic(QUEUE_LENGTH, ITEM_SIZE, queue_storage_array, &queue_buffer_size);
+uint8_t queue_storage_array[QUEUE_LENGTH * ITEM_SIZE * 2];
+StaticQueue_t queue_buffer;
+QueueHandle_t sensorDataQueue = xQueueCreateStatic(QUEUE_LENGTH, ITEM_SIZE, queue_storage_array, &queue_buffer);
 
 void sensorTask(void* pvParameters) {
     sensor_data_t data;
-    DHT dht(DHT, DHTTYPE);
+    DHT dht(DHTPIN, DHTTYPE);
 
     while (1) {
         float temperature = dht.readTemperature();
@@ -45,7 +46,7 @@ void sensorTask(void* pvParameters) {
             Serial.println("Failed to send data to queue!");
         }
 
-        delay(dht.getMinimumInterval());
+        delay(SENSOR_SAMPLING_DELAY);
     }
 }
 
@@ -67,7 +68,7 @@ void processingTask(void *pvParameters) {
                     averageTemperature /= count;
                     averagehumidity /= count;
 
-                    if (23 <= averageTemperature <= 29 && 75 <= averagehumidity <= 90) {
+                    if (averageTemperature >= 23 && averageTemperature <= 29 && averagehumidity >= 75 && averagehumidity <= 90) {
                         Serial.println("Your greenhouse is working great!");
                     } else {
                         Serial.println("Anomaly detected!");
@@ -89,12 +90,16 @@ void processingTask(void *pvParameters) {
         }
     }
 }
-void setup() {
-  Serial.begin(115200); // Begin serial communication for debugging
 
-  // Create the tasks
-  xTaskCreatePinnedToCore(sensorTask, "Sensor Task", 1024, NULL, 1, NULL);
-  xTaskCreatePinnedToCore(processingTask, "Processing Task", 1024, NULL, 2, NULL);
+void setup() {
+    Serial.begin(115200); // Begin serial communication for debugging
+
+    // Create the tasks
+    xTaskCreatePinnedToCore(sensorTask, "Sensor Task", 1024, NULL, 1, NULL, 0);
+    xTaskCreatePinnedToCore(processingTask, "Processing Task", 1024, NULL, 2, NULL, 0);
 }
 
 
+void loop() {
+    // Empty, as we're using FreeRTOS tasks
+}
