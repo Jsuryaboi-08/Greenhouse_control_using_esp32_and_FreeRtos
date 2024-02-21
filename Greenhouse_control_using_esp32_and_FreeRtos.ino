@@ -5,8 +5,8 @@
 #include <DHT.h>
 #include <DHT_U.h>
 
-#define DHTPIN 2
-#define DHTTYPE DHT11
+#define DHTPIN 2 // DHT sensor pin
+#define DHTTYPE DHT11 //Type of DHT sensor I used
 #define PRINTING_INTERVAL 5000 // Milliseconds
 #define SENSOR_SAMPLING_DELAY 2000 // Milliseconds
 
@@ -56,6 +56,9 @@ void processingTask(void *pvParameters) {
     float averagehumidity = 0.0;
     uint32_t count = 0;
     uint32_t lastPrintTime = millis();
+    const uint8_t HUMIDIFIER_PIN = 3; // Humdifier pin 
+
+    pinMode(HUMIDIFIER_PIN, OUTPUT);
 
     while (1) {
         if (xQueueReceive(sensorDataQueue, &receivedData, pdMS_TO_TICKS(10000)) == pdPASS) {
@@ -68,12 +71,14 @@ void processingTask(void *pvParameters) {
                     averageTemperature /= count;
                     averagehumidity /= count;
 
-                    if (averageTemperature >= 23 && averageTemperature <= 29 && averagehumidity >= 75 && averagehumidity <= 90) {
-                        Serial.println("Your greenhouse is working great!");
+                    // Controlling  the humidifier based on average humidity
+                    if (averagehumidity < 75) {
+                        digitalWrite(HUMIDIFIER_PIN, HIGH); // Turning on the humidifier if humidity is below 75%
                     } else {
-                        Serial.println("Anomaly detected!");
+                        digitalWrite(HUMIDIFIER_PIN, LOW); // Turning off the humidifier if humidity is above or equal to 75%
                     }
 
+                    
                     Serial.print("Average temperature of the greenhouse is: ");
                     Serial.println(averageTemperature);
                     Serial.print("Average humidity of the greenhouse is: ");
@@ -82,6 +87,7 @@ void processingTask(void *pvParameters) {
                     Serial.println("No valid temperature or humidity data received yet.");
                 }
 
+                
                 averageTemperature = 0.0;
                 averagehumidity = 0.0;
                 count = 0;
@@ -98,5 +104,6 @@ void setup() {
     xTaskCreatePinnedToCore(sensorTask, "Sensor Task", 1024, NULL, 1, NULL, 0);
     xTaskCreatePinnedToCore(processingTask, "Processing Task", 1024, NULL, 2, NULL, 0);
 }
-
-
+void loop(){
+  
+}
