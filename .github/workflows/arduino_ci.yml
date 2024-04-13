@@ -20,7 +20,7 @@ jobs:
         uses: per1234/setup-arduino@v1
         with:
           arduino-version: '2.0.0'
-          board: 'esp32:esp32:esp32'  # Use the appropriate board configuration
+          board: 'esp32:esp32:esp32'  
 
       - name: Install libraries
         run: |
