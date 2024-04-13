@@ -11,10 +11,15 @@ jobs:
 
     steps:
     - name: Checkout code
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
+
+    - name: Install Node.js 20
+      uses: actions/setup-node@v3
+      with:
+        node-version: 20
 
     - name: Install ESP32 core and libraries
-      uses: arduino/setup-arduino-cli@v1
+      uses: arduino/setup-arduino-cli@v2
       with:
         board: esp32:esp32:esp32doit-devkit-v1
         additional_urls: |
@@ -25,5 +30,6 @@ jobs:
         arduino-cli lib install "Adafruit Unified Sensor"
         arduino-cli lib install "DHT sensor library"
         arduino-cli compile --fqbn esp32:esp32:esp32doit-devkit-v1 ${{ github.workspace }}/Greenhouse_control_using_esp32_and_FreeRtos.ino
+
 
         
