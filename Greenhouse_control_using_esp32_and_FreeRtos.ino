@@ -49,7 +49,7 @@ void sensorTask(void* pvParameters) {
         delay(SENSOR_SAMPLING_DELAY);
     }
 }
-
+//testing github actions
 void processingTask(void *pvParameters) {
     sensor_data_t receivedData;
     float averageTemperature = 0.0;
