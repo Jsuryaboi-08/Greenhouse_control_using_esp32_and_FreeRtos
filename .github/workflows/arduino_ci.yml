@@ -17,10 +17,14 @@ jobs:
         uses: actions/checkout@v2
 
       - name: Set up Arduino CLI
-        uses: per1234/setup-arduino@v1
-        with:
-          arduino-version: '2.0.0'
-          board: 'esp32:esp32:esp32'  
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y curl git python3 python3-pip
+          mkdir -p ~/arduino-cli
+          curl -fsSL https://raw.githubusercontent.com/arduino/arduino-cli/master/install.sh | BINDIR=~/arduino-cli sh
+          export PATH="$PATH:$HOME/arduino-cli"
+          arduino-cli core update-index
+          arduino-cli core install esp32:esp32
 
       - name: Install libraries
         run: |
@@ -33,6 +37,4 @@ jobs:
 
       - name: Check sketch
         run: |
-          arduino-cli check --warnings all --fqbn esp32:esp32:esp32 Greenhouse_control_using_esp32_and_FreeRtos.ino
-
-      
+          arduino-cli check --warnings all --fqbn Greenhouse_control_using_esp32_and_FreeRtos.ino
