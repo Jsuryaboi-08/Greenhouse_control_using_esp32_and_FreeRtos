@@ -1,35 +1,38 @@
-name: ESP32 Arduino CI
+name: ESP32 Arduino Build
 
 on:
   push:
-    paths:
-    - '**.ino'
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v3
+      - name: Checkout repository
+        uses: actions/checkout@v2
 
-    - name: Install Node.js 20
-      uses: actions/setup-node@v3
-      with:
-        node-version: 20
+      - name: Set up Arduino CLI
+        uses: per1234/setup-arduino@v1
+        with:
+          arduino-version: '2.0.0'
+          board: 'esp32:esp32:esp32'  # Use the appropriate board configuration
 
-    - name: Install ESP32 core and libraries
-      uses: arduino/setup-arduino-cli@v2
-      with:
-        board: esp32:esp32:esp32doit-devkit-v1
-        additional_urls: |
-          https://dl.espressif.com/dl/package_esp32_index.json
+      - name: Install libraries
+        run: |
+          arduino-cli lib install "Adafruit Unified Sensor"
+          arduino-cli lib install "DHT sensor library"
 
-    - name: Compile Sketch
-      run: |
-        arduino-cli lib install "Adafruit Unified Sensor"
-        arduino-cli lib install "DHT sensor library"
-        arduino-cli compile --fqbn esp32:esp32:esp32doit-devkit-v1 ${{ github.workspace }}/Greenhouse_control_using_esp32_and_FreeRtos.ino
+      - name: Compile sketch
+        run: |
+          arduino-cli compile --fqbn esp32:esp32:esp32 Greenhouse_control_using_esp32_and_FreeRtos.ino
 
+      - name: Check sketch
+        run: |
+          arduino-cli check --warnings all --fqbn esp32:esp32:esp32 Greenhouse_control_using_esp32_and_FreeRtos.ino
 
-        
+      
