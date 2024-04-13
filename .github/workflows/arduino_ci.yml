@@ -1,0 +1,21 @@
+name: Arduino CI
+
+on:
+  push:
+    paths:
+    - '**.ino'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Setup Arduino CLI
+      uses: arduino/setup-arduino-cli@v1
+
+    - name: Compile Sketch
+      run: |
+        arduino-cli compile --fqbn arduino:avr:uno ${{ github.workspace }}/Greenhouse_control_using_esp32_and_FreeRtos.ino
