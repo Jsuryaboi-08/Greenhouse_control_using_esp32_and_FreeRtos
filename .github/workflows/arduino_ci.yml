@@ -1,4 +1,4 @@
-name: Arduino CI
+name: ESP32 Arduino CI
 
 on:
   push:
@@ -13,9 +13,17 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v2
 
-    - name: Setup Arduino CLI
+    - name: Install ESP32 core and libraries
       uses: arduino/setup-arduino-cli@v1
+      with:
+        board: esp32:esp32:esp32doit-devkit-v1
+        additional_urls: |
+          https://dl.espressif.com/dl/package_esp32_index.json
 
     - name: Compile Sketch
       run: |
-        arduino-cli compile --fqbn arduino:avr:uno ${{ github.workspace }}/Greenhouse_control_using_esp32_and_FreeRtos.ino
+        arduino-cli lib install "Adafruit Unified Sensor"
+        arduino-cli lib install "DHT sensor library"
+        arduino-cli compile --fqbn esp32:esp32:esp32doit-devkit-v1 ${{ github.workspace }}/Greenhouse_control_using_esp32_and_FreeRtos.ino
+
+        
