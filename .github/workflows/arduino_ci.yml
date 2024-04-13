@@ -1,32 +1,31 @@
-name: ESP32 Arduino Build
+name: Build and Upload Arduino Sketch
+
 on:
-  -push
-  -pull_request
+  push:
+    branches:
+      - main
 
 jobs:
-  compile-sketches:
+  build-and-upload:
     runs-on: ubuntu-latest
+
     steps:
-      -uses: actions/checkout@v2
-      -name: Set up Arduino CLI
-          uses: per1234/setup-arduino-cli@v1
-          with:
-            arduino-version: 1.8.13
-      -name: Install ESP32 board support
-          run: arduino-cli core update-index --additional-urls https://raw.githubusercontent.com/espressif/arduino-esp32/gh-pages/package_esp32_index.json && arduino-cli core install esp32:esp32
-      -name: Install ESP32C3 board support
-          run: arduino-cli core update-index --additional-urls https://raw.githubusercontent.com/espressif/arduino-esp32/gh-pages/package_esp32c3_index.json && arduino-cli core install esp32:esp32:esp32c3
-      -name: Compile sketch
-          run: arduino-cli compile --fqbn esp32:esp32:esp32c3 --verbose Greenhouse_control_using_esp32_and_FreeRtos
-      -name: Install libraries
-          run: arduino-cli lib install "DHT sensor library" "Adafruit Unified Sensor"
-      -name: Compile sketch
-          run: arduino-cli compile --fqbn esp32:esp32:esp32c3 --verbose Greenhouse_control_using_esp32_and_FreeRtos.ino
-      -name: Upload sketch
-          run: arduino-cli upload --port /dev/ttyUSB0 --fqbn esp32:esp32:esp32c3 --verbose Greenhouse_control_using_esp32_and_FreeRtos.ino
-      -name: Test sketch
-          run: |
-            sudo apt-get install -y ser2net
-            echo '127.0.0.1 9600 8N1 1500000 0' | sudo tee /etc/ser2net.conf
-            sudo ser2net -d -C /etc/ser2net.conf
-            arduino-cli monitor --port /dev/ttyUSB0 --monitor-port 15000
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Install Arduino IDE
+      uses: arduino/setup-arduino@v2
+      with:
+        board_url: esp32:esp32
+        sketch: sketch/sketch.ino
+
+    - name: Install DHT Library
+      run: arduino-cli lib install "DHT sensor library"
+
+    - name: Install Adafruit Unified Sensor Library
+      run: arduino-cli lib install "Adafruit Unified Sensor"
+
+    - name: Build and Upload Sketch
+      run: |
+        arduino-cli compile --fqbn esp32:esp32 Greenhouse_control_using_esp32_and_FreeRtos.ino
+        arduino-cli upload --fqbn esp32:esp32 Greenhouse_control_using_esp32_and_FreeRtos.ino
