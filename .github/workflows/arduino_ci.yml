@@ -35,6 +35,6 @@ jobs:
 
       - name: Build Arduino library
         run: |
-          arduino-cli compile --fqbn esp32:esp32:esp32wrover --library Arduino-List --library fabgl --library src --build-path build Greenhouse_control_using_esp32_and_FreeRtos.ino
+          arduino-cli compile --fqbn esp32:esp32:esp32wrover --library Arduino-List --library fabgl --library src --build-path build /Greenhouse_control_using_esp32_and_FreeRtos.ino
           
      
