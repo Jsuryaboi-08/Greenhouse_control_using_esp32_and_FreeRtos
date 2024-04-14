@@ -35,6 +35,6 @@ jobs:
 
       - name: Build Arduino library
         run: |
-          arduino-cli compile --fqbn esp32:esp32:esp32wrover --library Arduino-List --library fabgl --library src --build-path build /Greenhouse_control_using_esp32_and_FreeRtos.ino
+          arduino-cli compile --fqbn esp32:esp32:esp32wrover --libraries Arduino-List,FreeRTOS,Adafruit_Sensor,DHT-sensor-library --build-properties build.path=build,build.warn_data_percentage=75 --output-dir build --verbose Greenhouse_control_using_esp32_and_FreeRtos.ino
           
      
