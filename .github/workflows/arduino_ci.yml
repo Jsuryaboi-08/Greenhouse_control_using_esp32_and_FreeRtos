@@ -1,4 +1,4 @@
-name: Build and Upload Arduino Sketch
+name: Arduino CI
 
 on:
   push:
@@ -6,26 +6,35 @@ on:
       - main
 
 jobs:
-  build-and-upload:
+  build:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v2
+      - name: Checkout code
+        uses: actions/checkout@v2
 
-    - name: Install Arduino IDE
-      uses: arduino/setup-arduino@v2
-      with:
-        board_url: esp32:esp32
-        sketch: sketch/sketch.ino
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.11
 
-    - name: Install DHT Library
-      run: arduino-cli lib install "DHT sensor library"
+      - name: Install Arduino CLI
+        uses: arduino/setup-arduino-cli@v1
 
-    - name: Install Adafruit Unified Sensor Library
-      run: arduino-cli lib install "Adafruit Unified Sensor"
+      - name: Install Python serial library
+        run: python3 -m pip install pyserial
 
-    - name: Build and Upload Sketch
-      run: |
-        arduino-cli compile --fqbn esp32:esp32 Greenhouse_control_using_esp32_and_FreeRtos.ino
-        arduino-cli upload --fqbn esp32:esp32 Greenhouse_control_using_esp32_and_FreeRtos.ino
+      - name: Arduino ESP32 Platform Installation
+        run: arduino-cli core install esp32:esp32
+
+      - name: Download Arduino Dependencies
+        run: |
+          git clone https://github.com/FreeRTOS/FreeRTOS.git
+          git clone https://github.com/adafruit/Adafruit_Sensor.git
+          git clone https://github.com/adafruit/DHT-sensor-library.git
+
+      - name: Build Arduino library
+        run: |
+          arduino-cli compile --fqbn esp32:esp32:esp32wrover --library Arduino-List --library fabgl --library src --build-path build Greenhouse_control_using_esp32_and_FreeRtos.ino
+          
+     
